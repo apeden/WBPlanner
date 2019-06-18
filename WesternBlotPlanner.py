@@ -51,5 +51,5 @@ class fileReader(object):
         for l in inFile:
             forLanes.append(splitUp(l))
     def splitUp(self, line)
-        return rline.split(",")
+        return line.split(",")
         
