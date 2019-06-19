@@ -1,5 +1,5 @@
 class WBRecord(object):
-    def __init__(self, id = 'WB#XX.YYY', date, gels,
+    def __init__(self, date, gels, id = 'WB#XX.YYY',
                head = ('Ex#', 'RU#', 'Cond', 'sample vol',
                        'buffer', 'LB')):
         self.date = date
@@ -12,19 +12,25 @@ class WBRecord(object):
         return self.head
             
 class Gel(object):
-    def __init__(self, gel_num, lanes, maxLanes = 10):
-        self.lanes = lanes
-        self.gel_num = gel_hum
-        assert(len(self.lanes) <= maxLanes)"Too many lanes"
+    def __init__(self, gel_num, maxLanes = 10):
+        self.lanes = ()
+        self.gel_num = gel_num
+        assert(len(self.lanes) <= maxLanes),"Too many lanes"
+    def setLane(self, lane):
+        self.lanes += lane
     def getLanes(self):
         return self.lanes
+    def availLanes(self):
+        return maxLanes - len(self.lanes)
     def getID(self):
         return self.gel_num
 
 class Lane(object):
-    def __init__(self, samples,  condition, sample_vol,
-                 control = False, final_vol = 20):
-        self.samples = samples
+    def __init__(self, exNums, ruNums, condition, sample_vol,
+                 final_vol, control = False):
+        self.samples = {}
+        self.exNums = exNums
+        self.ruNums = ruNums
         self.condition = condition
         self.sample_vol = sample_vol
         self.control = control
@@ -38,18 +44,39 @@ class Lane(object):
     def getControl(self):
         return self.control
     def __str__(self):
-        return self.condition, str(self.sample_vol), \
-               str(self.final_vol - self.sample_vol - (self.final-vol//4)),\
-               str(self.final_vol//4)
-
-
-    
-class fileReader(object):
+        return str(self.exNums)+ str(self.ruNums)+ \
+               str(self.condition)+ str(self.sample_vol)+ \
+               str(self.final_vol)
+  
+class FileReader(object):
     def __init__(self, file):
         self.inFile = open(file)
         self.forLanes = []
-        for l in inFile:
-            forLanes.append(splitUp(l))
-    def splitUp(self, line)
-        return line.split(",")
+        for l in self.inFile:
+            self.forLanes.append(self.splitUp(l))
+    def splitUp(self, line):
+        return line.split(";")
+    def getForLanes(self):
+        return self.forLanes
+    def __str__(self):
+        return (str(self.forLanes))
+
+f = FileReader("plan.txt")
+print(f)
+cntrLn = []
+testLn = [] 
+laneTxts = f.getForLanes()
+for elem in laneTxts:
+    print(elem)
+    if elem[0].lower() == "control":
+        cntrLn.append(Lane(elem[1], elem[2], elem[3],
+                     elem[4], elem[5], control = True))
+    else:
+        testLn.append(Lane(elem[0], elem[1], elem[2],
+                     elem[3], elem[4]))
+for Ln in cntrLn:
+    print(Ln)
+for Ln in testLn:
+    print(Ln)
+
         
