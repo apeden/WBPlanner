@@ -15,15 +15,18 @@ class Gel(object):
     gel_num = 0
     def __init__(self, maxLanes = 10):
         assert(Gel.gel_num <6), "Too many gels"
+        self.maxLanes = maxLanes
         self.index = ['A','B','C','D','E','F'][Gel.gel_num]
         self.laneNum = 2
         self.lanes = []
         self.gel_num = Gel.gel_num
         assert(len(self.lanes) <= maxLanes),"Too many lanes"
+    def getMaxLanes(self):
+        return self.maxLanes
     def getIndex(self):
         return self.index
     def setLane(self, lane):
-        assert(self.laneNum <= 10),"Too many lanes"
+        ##assert(self.laneNum <= 10),"Too many lanes"
         self.lanes.append(lane)
         self.laneNum += 1
     def getLanes(self):
@@ -35,9 +38,10 @@ class Gel(object):
         return self.gel_num
 
 class Lane(object):
-    def __init__(self, exNums, ruNums, condition, sample_vol,
+    def __init__(self, laneType, exNums, ruNums, condition, sample_vol,
                  final_vol, control = False):
         self.num = 0
+        self.laneType = laneType
         self.exNums = exNums
         self.ruNums = ruNums
         self.condition = condition
@@ -57,10 +61,13 @@ class Lane(object):
     def getControl(self):
         return self.control
     def __str__(self):
-        return str(self.num).ljust(4, " ") + str(self.exNums).ljust(20," ")\
-               + str(self.ruNums).ljust(20," ")+ \
-               str(self.condition).ljust(15," ")+ str(self.sample_vol).ljust(7," ")+ \
-               str(self.final_vol).ljust(3," ")
+        return str(self.num).ljust(4, " ") \
+               + str(self.laneType).ljust(20," ")\
+               + str(self.exNums).ljust(20," ")\
+               + str(self.ruNums).ljust(20," ")\
+               + str(self.condition).ljust(15," ")\
+               + str(self.sample_vol).ljust(7," ") \
+               + str(self.final_vol).ljust(3," ")
   
 class FileReader(object):
     def __init__(self, file):
@@ -79,29 +86,19 @@ class FileReader(object):
     def laneSort(self):      
         laneType = None
         for elem in self.forLanes:
-            if elem[0].lower() == "control":
+            typ = elem[0].lower()
+            if "control" in typ:
                 laneType = self.cntrLn
-            elif elem[0].lower() == "standard":
-                laneType = self.std
-            elif elem[0].lower() == "marker":
+            elif "marker" in typ:
                 laneType = self.mrk
-        if laneType == None:
-            for i in range(len(elem[2].split(","))):
-                self.testLn.append(Lane(elem[0], elem[1],
-                                        elem[2].split(",")[i],
-                                        elem[3].split(",")[i],
-                                        elem[4]))
-
-        else:
-            for i in range(len(elem[2].split(","))):
-                laneType.append(Lane(elem[1], elem[2],
-                                        elem[3].split(",")[i],
-                                        elem[4].split(",")[i],
-                                        elem[5]))
-
-
-
-            
+            elif "standard" in typ:
+                laneType = self.std
+            else: laneType = self.testLn 
+            for i in range(len(elem[3].split(","))):
+                laneType.append(Lane(elem[0], elem[1], elem[2],
+                                     elem[3].split(",")[i],
+                                     elem[4].split(",")[i],
+                                     elem[5]))
     def getLanes(self):
         return self.mrk, self.cntrLn, self.testLn, self.std 
     def close(self):
@@ -109,17 +106,40 @@ class FileReader(object):
     def __str__(self):
         return (str(self.forLanes))
 
-f = FileReader("plan.txt")
+class GelPlanner(object):
+    def__init__(self, file):
+        self.f = FileReader(file)
+        self.f.laneSort()
+        self.mrk, self.cntrLn, \
+        testLn, std = self.f.getLanes()        
+"plan.txt"
+
 f.laneSort()
-mrk, cntrLn, testLn, std = f.getLanes()
+
 g = Gel()
 num = 1
-for laneType in mrk, cntrLn, testLn, std :
+def setLn(Ln):
+Ln.setNum(num)
+    g.setLane(Ln)
+    num += 1
+    
+
+for laneType in mrk, cntrLn:
     for Ln in laneType:
         Ln.setNum(num)
         g.setLane(Ln)
         num += 1
-    
+
+for i in range(g.getMaxLanes() - len(mrk) - len(std) -len(cntrLn)):
+    testLn[i].setNum(num)
+    g.setLane(testLn[i])
+    num += 1
+for Ln in std:
+    Ln.setNum(num)
+    g.setLane(Ln)
+    num += 1
+
+
 g.getLanes()
 print("Gel ", g.getIndex())
 for lane in g.getLanes():
