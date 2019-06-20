@@ -12,10 +12,15 @@ class WBRecord(object):
         return self.head
             
 class Gel(object):
+    gel_num = 0
     def __init__(self, gel_num, maxLanes = 10):
+        assert(gel_num <6), "Too many gels"
+        self.index = ['A','B','C','D','E','F'][gel_num]
         self.lanes = ()
         self.gel_num = gel_num
         assert(len(self.lanes) <= maxLanes),"Too many lanes"
+    def getIndex(self):
+        return self.index
     def setLane(self, lane):
         self.lanes += lane
     def getLanes(self):
@@ -28,7 +33,6 @@ class Gel(object):
 class Lane(object):
     def __init__(self, exNums, ruNums, condition, sample_vol,
                  final_vol, control = False):
-        self.samples = {}
         self.exNums = exNums
         self.ruNums = ruNums
         self.condition = condition
@@ -44,9 +48,10 @@ class Lane(object):
     def getControl(self):
         return self.control
     def __str__(self):
-        return str(self.exNums)+ str(self.ruNums)+ \
-               str(self.condition)+ str(self.sample_vol)+ \
-               str(self.final_vol)
+        return str(self.exNums).ljust(20," ")\
+               + str(self.ruNums).ljust(20," ")+ \
+               str(self.condition).ljust(15," ")+ str(self.sample_vol).ljust(7," ")+ \
+               str(self.final_vol).ljust(3," ")
   
 class FileReader(object):
     def __init__(self, file):
