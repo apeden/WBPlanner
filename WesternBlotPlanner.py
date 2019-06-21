@@ -1,16 +1,32 @@
+from datetime import date
+today = date.today()
+d1 = today.strftime("%d/%m/%Y")
+
+
 class WBRecord(object):
-    def __init__(self, id = 'WB#XX.YYY'):
+    def __init__(self, file, planData = d1, operative = "Alex Peden",
+                 dev = "3F4 1:10K, antiMFac 1:25K"):
         self.gels = []
-        self.id = id
+        self.id = file
+        self.planDate = d1
+        self.planDate
+        self.operative = operative
+        self.dev = dev
+        if "napta" in self.id.lower():
+            self.dev += " SuperSignal"
+        else: self.dev += " prime"          
     def getID(self):
         return self.id
     def setGel(self, gel):
         self.gels.append(gel)
     def getGels(self):
+        return self.gels
+    def getGelsIt(self):
         for gel in self.gels:
             yield gel
     def __str__(self):
-        return self.id
+        return self.id+"\n"+self.operative+"\n"+self.planDate\
+               +"\n"+self.dev 
             
 class Gel(object):
     def __init__(self, num, maxLanes = 10):
@@ -21,8 +37,6 @@ class Gel(object):
         assert(len(self.lanes) <= self.maxLanes),"Too many lanes"
     def getMaxLanes(self):
         return self.maxLanes
-    def getIndex(self):
-        return self.index
     def setLane(self, lane):
         self.lanes.append(lane)
     def getLanes(self):
@@ -32,6 +46,10 @@ class Gel(object):
         return self.maxLanes - len(self.lanes)
     def getID(self):
         return self.gel_num
+    def copy(self):
+        return self
+    def __str__(self):
+        return "Gel " + self.index
 
 class Lane(object):
     def __init__(self, laneType, exNums, ruNums, condition, sample_vol,
@@ -58,10 +76,10 @@ class Lane(object):
         return self.control
     def __str__(self):
         return str(self.num).ljust(4, " ") \
-               + str(self.laneType).ljust(20," ")\
+               + str(self.laneType).ljust(10," ")\
                + str(self.exNums).ljust(20," ")\
                + str(self.ruNums).ljust(20," ")\
-               + str(self.condition).ljust(15," ")\
+               + str(self.condition).ljust(20," ")\
                + str(self.sample_vol).ljust(7," ") \
                + str(self.final_vol).ljust(3," ")
   
@@ -102,49 +120,60 @@ class FileReader(object):
 
 class GelPlanner(object):
     def __init__(self, file):
-        self.r = WBRecord()
+        self.r = WBRecord(file)
         self.f = FileReader(file)
         self.f.laneSort()
         self.mrk, self.cntrLn, \
         self.testLn, self.std = self.f.getLanes()
         self.g = None
-        self.num = 1
-        self.lane_num = 1                     
+        self.num = 0
+        self.lane_num = 1
+    def getTestLns(self):
+        return self.testLn
     def getRecord(self):
         return self.r
     def closeFile(self):
         self.f.close()
     def setGel(self):
+        self.lane_num = 1
         self.g = Gel(self.num)
         self.num += 1
+    def getGel(self):
+        return self.g
     def setLn(self, ln):
-        ln.setNum(self.lane_num)
+        print(self.lane_num)
+        ln.setNum(self.lane_num)    
         self.g.setLane(ln)
         self.lane_num += 1
     def add_conlanes(self):
         for laneType in self.mrk, self.cntrLn:
-            for ln in laneType:
-                self.setLn(ln)
-    def add_stdlanes(self):
-        for laneType in self.mrk, self.cntrLn:
-            for ln in laneType:
-                self.setLn(ln)
+            for i in range(len(laneType)):
+                self.setLn(laneType[i])
     def add_testlanes(self):
-            for i in range(self.g.availLanes()):
-                try: self.setLn(self.testLn.pop(0))        
-                except: break                       
+            for i in range(self.g.availLanes()-1):
+                try:
+                    self.setLn(self.testLn.pop(0))
+                except: break
+    def add_stdlanes(self):
+        for i in range(len(self.std)):
+            self.setLn(self.std[i])
+    def addGel(self, gel):
+        self.r.setGel(gel)
     def __str__(self):
         return str(self.r)
 
 
 p = GelPlanner("plan.txt")
-p.setGel()
-p.add_conlanes()
-p.add_stdlanes()
-p.add_testlanes()
-print(p)
-gels_It = p.getRecord().getGels()
-for gel in gels_It:
-    gel.getLanes()
+i = 0
+print(p.getRecord())
+while len(p.getTestLns())>0:
+    p.setGel()
+    p.add_conlanes()
+    p.add_testlanes()
+    p.add_stdlanes()
+    p.addGel(p.getGel().copy())   
+    gel = p.getRecord().getGels()[i]
+    print(gel)
+    i += 1
 p.closeFile()
         
