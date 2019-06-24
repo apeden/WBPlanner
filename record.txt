@@ -1,0 +1,25 @@
+plan.txt
+Alex Peden
+22/06/2019
+3F4 1:10K, antiMFac 1:25K prime
+Gel A
+1   Marker    BenchMark MagicMark  5 and 1             None                6      30
+2   Control   Ex#19.235,Ex#16.1047 SD#02/103, RU#02/103 sonicated 1:100    30     30 
+3   Control   Ex#19.235,Ex#16.1047 SD#02/103, RU#02/103 frozen 1:100       30     30 
+4   test      Ex#19.249(FC)        SD016/19            sonicated           30     30
+5   test      Ex#19.252(Cb)        SD016/19            sonicated           30     30
+6   test      Ex#19.256(FC)        SD018/19            sonicated           30     30
+7   test      Ex#19.259(Cb)        SD018/19            sonicated           30     30
+8   test      Ex#19.256(FC)        SD018/19            sonicated           30     30
+9   test      Ex#19.259(Cb)        SD018/19            sonicated           30     30
+10  Standard  Ex#18.1178           RU# 03/059          None                5      30
+Gel B
+1   Marker    BenchMark MagicMark  5 and 1             None                6      30
+2   Control   Ex#19.235,Ex#16.1047 SD#02/103, RU#02/103 sonicated 1:100    30     30 
+3   Control   Ex#19.235,Ex#16.1047 SD#02/103, RU#02/103 frozen 1:100       30     30 
+4   test      Ex#19.266(FC)        SD019/19            sonicated           30     30
+5   test      Ex#19.269(Cb)        SD019/19            sonicated           30     30
+6   test      Ex#19.256(FC)        SD018/19            sonicated           30     30
+7   test      Ex#19.259(Cb)        SD018/19            sonicated           30     30
+8   Standard  Ex#18.1178           RU# 03/059          None                5      30
+>>> 

@@ -1,0 +1,11 @@
+Marker;BenchMark MagicMark; 5 and 1 ; None; 6; 30;
+Control;Ex#19.235,Ex#16.1047; SD#02/103, RU#02/103;frozen 1:100,sonicated 1:100;30,30;30;
+test;Ex#19.295(FC);SD020/19;sonicated; 30; 30;
+test;Ex#19.298(Cb);SD020/19;sonicated; 30; 30;
+test;Ex#19.299(FC);SD028/16;frozen 1:100,sonicated 1:100;30,30;30;
+test;Ex#19.300(TC);SD028/16;frozen 1:100,sonicated 1:100;30,30;30;
+test;Ex#19.303(PC);SD028/16;frozen 1:100,sonicated 1:100;30,30;30;
+test;Ex#19.304(OC);SD028/16;frozen 1:100,sonicated 1:100;30,30;30;
+Standard;Ex#18.1178; RU# 03/059; None; 5; 30;
+test;Ex#19.305(CB);SD028/16;frozen 1:100,sonicated 1:100;30,30;30;
+test;Ex#19.306(TH);SD028/16;frozen 1:100,sonicated 1:100;30,30;30;

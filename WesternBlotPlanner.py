@@ -5,7 +5,7 @@ d1 = today.strftime("%d/%m/%Y")
 
 class WBRecord(object):
     def __init__(self, file, planData = d1, operative = "Alex Peden",
-                 dev = "3F4 1:10K, antiMFac 1:25K"):
+                 dev = "3F4 1:10K, antiMFab 1:25K"):
         self.gels = []
         self.id = file
         self.planDate = d1
@@ -54,7 +54,6 @@ class Gel(object):
 class Lane(object):
     def __init__(self, laneType, exNums, ruNums, condition, sample_vol,
                  final_vol, control = False):
-        self.num = 0
         self.laneType = laneType
         self.exNums = exNums
         self.ruNums = ruNums
@@ -62,8 +61,6 @@ class Lane(object):
         self.sample_vol = sample_vol
         self.control = control
         self.final_vol = final_vol
-    def setNum(self, num):
-        self.num = num
     def getNum():
         return self.num
     def getSamples(self):
@@ -75,8 +72,7 @@ class Lane(object):
     def getControl(self):
         return self.control
     def __str__(self):
-        return str(self.num).ljust(4, " ") \
-               + str(self.laneType).ljust(10," ")\
+        return str(self.laneType).ljust(10," ")\
                + str(self.exNums).ljust(20," ")\
                + str(self.ruNums).ljust(20," ")\
                + str(self.condition).ljust(20," ")\
@@ -84,8 +80,8 @@ class Lane(object):
                + str(self.final_vol).ljust(3," ")
   
 class FileReader(object):
-    def __init__(self, file):
-        self.inFile = open(file)
+    def __init__(self, directory, file):
+        self.inFile = open(directory+"/"+file)
         self.forLanes = []
         for l in self.inFile:
             self.forLanes.append(l.split(";"))
@@ -119,15 +115,14 @@ class FileReader(object):
         return (str(self.forLanes))
 
 class GelPlanner(object):
-    def __init__(self, file):
+    def __init__(self, directory, file):
         self.r = WBRecord(file)
-        self.f = FileReader(file)
+        self.f = FileReader(directory, file+".txt")
         self.f.laneSort()
         self.mrk, self.cntrLn, \
         self.testLn, self.std = self.f.getLanes()
         self.g = None
         self.num = 0
-        self.lane_num = 1
     def getTestLns(self):
         return self.testLn
     def getRecord(self):
@@ -135,16 +130,12 @@ class GelPlanner(object):
     def closeFile(self):
         self.f.close()
     def setGel(self):
-        self.lane_num = 1
         self.g = Gel(self.num)
         self.num += 1
     def getGel(self):
         return self.g
-    def setLn(self, ln):
-        print(self.lane_num)
-        ln.setNum(self.lane_num)    
+    def setLn(self, ln):   
         self.g.setLane(ln)
-        self.lane_num += 1
     def add_conlanes(self):
         for laneType in self.mrk, self.cntrLn:
             for i in range(len(laneType)):
@@ -162,18 +153,34 @@ class GelPlanner(object):
     def __str__(self):
         return str(self.r)
 
+file = "WB#19.XXX AP (PMCA - 20)"
 
-p = GelPlanner("plan.txt")
+p = GelPlanner("plans",file)
 i = 0
+memo = open(file+" lane order.txt", "w")
+
 print(p.getRecord())
+memo.write(p.getRecord().__str__()+"\n")
 while len(p.getTestLns())>0:
     p.setGel()
     p.add_conlanes()
+    #for lanes in p.if it says alone
+    #and none of the lanes already in gel mismatch on elem[2] continue
+        #continue
+        #else: break
     p.add_testlanes()
+    
     p.add_stdlanes()
     p.addGel(p.getGel().copy())   
-    gel = p.getRecord().getGels()[i]
+gel_it = p.getRecord().getGelsIt()
+for gel in gel_it:
     print(gel)
-    i += 1
+    memo.write(gel.__str__()+"\n")
+    positn = 1
+    for lane in gel.getLanes():
+        print(str(positn).ljust(3," "),lane)
+        memo.write(str(positn).ljust(3," ")+str(lane)+"\n")
+        positn += 1
+memo.close()            
 p.closeFile()
         
