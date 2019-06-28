@@ -1,0 +1,11 @@
+WB#19.XXX AP (NaPTA - 20)
+Alex Peden
+24/06/2019
+3F4 1:10K, antiMFab 1:25K SuperSignal
+Gel A
+1  Marker    BenchMark MagicMark 5 and 1             Direct load         6      30 
+2  Control   Ex#19.293           SD#02/2007          unspiked            30     30 
+3  Control   Ex#19.296,Ex18.1178 SD#02/2007,RU03/059 spiked (5ul vCJD)   30     30 
+4  test      Ex#19.158(FC)       SD020/19            NaPTA               30     30 
+5  test      Ex#19.159(Cb)       SD020/19            NaPTA               30     30 
+6  Standard  Ex#18.1178          RU# 03/059          Direct load         5      30 

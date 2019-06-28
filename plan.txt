@@ -1,9 +1,0 @@
-Marker;BenchMark MagicMark; 5 and 1 ; None; 6; 30;
-Control;Ex#19.235,Ex#16.1047; SD#02/103, RU#02/103; sonicated 1:100, frozen 1:100; 30, 30; 30;
-Ex#19.249(FC); SD016/19; sonicated; 30; 30;
-Ex#19.252(Cb); SD016/19; sonicated; 30; 30;
-Ex#19.256(FC); SD018/19; sonicated; 30; 30;
-Ex#19.259(Cb); SD018/19; sonicated; 30; 30;
-Standard;Ex#18.1178; RU# 03/059; None; 5; 30;
-Ex#19.266(FC); SD019/19; sonicated; 30; 30;
-Ex#19.269(Cb); SD019/19; sonicated; 30; 30;
