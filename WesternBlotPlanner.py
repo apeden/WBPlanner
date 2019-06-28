@@ -49,7 +49,7 @@ class Gel(object):
     def copy(self):
         return self
     def __str__(self):
-        return "Gel " + self.index
+        return "\nGel " + self.index
 
 class Lane(object):
     def __init__(self, laneType, exNums, ruNums, condition, sample_vol,
@@ -72,12 +72,12 @@ class Lane(object):
     def getControl(self):
         return self.control
     def __str__(self):
-        return str(self.laneType).ljust(10," ")\
-               + str(self.exNums).ljust(20," ")\
-               + str(self.ruNums).ljust(20," ")\
-               + str(self.condition).ljust(20," ")\
-               + str(self.sample_vol).ljust(7," ") \
-               + str(self.final_vol).ljust(3," ")
+        return str(self.laneType).ljust(10,"_")\
+               + str(self.exNums).ljust(27,"_")\
+               + str(self.ruNums).ljust(25,"_")\
+               + str(self.condition).ljust(20,"_")\
+               + str(self.sample_vol).ljust(7,"_") \
+               + str(self.final_vol).ljust(3,"_")
   
 class FileReader(object):
     def __init__(self, directory, file):
@@ -178,8 +178,8 @@ for gel in gel_it:
     memo.write(gel.__str__()+"\n")
     positn = 1
     for lane in gel.getLanes():
-        print(str(positn).ljust(3," "),lane)
-        memo.write(str(positn).ljust(3," ")+str(lane)+"\n")
+        print(str(positn).ljust(3,"_"),lane)
+        memo.write(str(positn).ljust(3,"_")+str(lane)+"\n")
         positn += 1
 memo.close()            
 p.closeFile()
