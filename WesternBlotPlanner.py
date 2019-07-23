@@ -81,10 +81,11 @@ class Lane(object):
   
 class FileReader(object):
     def __init__(self, directory, file):
-        self.inFile = open(directory+"/"+file)
+        self.inFile = open(directory+"/"+file) 
         self.forLanes = []
         for l in self.inFile:
             self.forLanes.append(l.split(";"))
+        self.dscrpt = self.forLanes[0][0]
         self.cntrLn = []
         self.testLn = []
         self.std = []
@@ -93,7 +94,7 @@ class FileReader(object):
         return self.forLanes
     def laneSort(self):      
         laneType = None
-        for elem in self.forLanes:
+        for elem in self.forLanes[1:]:
             typ = elem[0].lower()
             if "control" in typ:
                 laneType = self.cntrLn
@@ -103,10 +104,17 @@ class FileReader(object):
                 laneType = self.std
             else: laneType = self.testLn 
             for i in range(len(elem[3].split(","))):
-                laneType.append(Lane(elem[0], elem[1], elem[2],
+                try:
+                    laneType.append(Lane(elem[0], elem[1], elem[2],
                                      elem[3].split(",")[i],
                                      elem[4].split(",")[i],
                                      elem[5]))
+                except IndexError:
+                    print("There must be a load volume stated",
+                          " for each condition")
+                    raise
+    def getDscrpt(self):
+        return self.dscrpt 
     def getLanes(self):
         return self.mrk, self.cntrLn, self.testLn, self.std 
     def close(self):
@@ -127,6 +135,8 @@ class GelPlanner(object):
         return self.testLn
     def getRecord(self):
         return self.r
+    def getDscrpt(self):
+        return self.f.getDscrpt()
     def closeFile(self):
         self.f.close()
     def setGel(self):
@@ -148,39 +158,41 @@ class GelPlanner(object):
     def add_stdlanes(self):
         for i in range(len(self.std)):
             self.setLn(self.std[i])
+    def buildGels(self):
+        while len(self.testLn) > 0:
+            self.setGel()
+            self.add_conlanes()
+            self.add_testlanes()          
+            self.add_stdlanes()
+            self.addGel(self.getGel().copy()) 
     def addGel(self, gel):
         self.r.setGel(gel)
     def __str__(self):
         return str(self.r)
 
-file = "WB#19.XXX AP (PMCA - 20)"
+def toTextFile(file, directory = "plans", scrnPrnt = True):
+    p = GelPlanner(directory,file)
+    i = 0
+    memo = open(file+" lane order.txt", "w")
+    if scrnPrnt:
+        print(p.getRecord())
+        print(p.getDscrpt())
+    memo.write(p.getRecord().__str__()+"\n")
+    memo.write(p.getDscrpt()+"\n")
+    p.buildGels() 
+    gel_it = p.getRecord().getGelsIt()
+    for gel in gel_it:
+        if scrnPrnt: print(gel)
+        memo.write(gel.__str__()+"\n")
+        positn = 1
+        for lane in gel.getLanes():
+            if scrnPrnt: print(str(positn).ljust(3,"_"),lane)
+            memo.write(str(positn).ljust(3,"_")+str(lane)+"\n")
+            positn += 1
+    memo.close()            
+    p.closeFile()
 
-p = GelPlanner("plans",file)
-i = 0
-memo = open(file+" lane order.txt", "w")
+toTextFile("WB#19.XXX AP (standards)")
 
-print(p.getRecord())
-memo.write(p.getRecord().__str__()+"\n")
-while len(p.getTestLns())>0:
-    p.setGel()
-    p.add_conlanes()
-    #for lanes in p.if it says alone
-    #and none of the lanes already in gel mismatch on elem[2] continue
-        #continue
-        #else: break
-    p.add_testlanes()
-    
-    p.add_stdlanes()
-    p.addGel(p.getGel().copy())   
-gel_it = p.getRecord().getGelsIt()
-for gel in gel_it:
-    print(gel)
-    memo.write(gel.__str__()+"\n")
-    positn = 1
-    for lane in gel.getLanes():
-        print(str(positn).ljust(3,"_"),lane)
-        memo.write(str(positn).ljust(3,"_")+str(lane)+"\n")
-        positn += 1
-memo.close()            
-p.closeFile()
-        
+
+
