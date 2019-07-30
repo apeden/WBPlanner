@@ -100,6 +100,8 @@ class FileReader(object):
     def laneSort(self):      
         """Classify lanes and sort into separate lists"""
         laneType = None
+        #forLanes: type;RU#;Tissues;Exs;Conditions;Volumes;FinalVol
+        #or:       type;Markers;Vol;None;None;None;FinalVol
         for elem in self.forLanes[1:]:
             typ = elem[0].lower()
             if "control" in typ:
@@ -109,15 +111,22 @@ class FileReader(object):
             elif "standard" in typ:
                 laneType = self.std
             else: laneType = self.testLn 
-            for i in range(len(elem[3].split(","))):
+            for i in range(len(elem[2].split(","))):
+                for j in range(len(elem[4].split(","))):
                 try:
-                    laneType.append(Lane(elem[0], elem[1], elem[2],
-                                     elem[3].split(",")[i],
-                                     elem[4].split(",")[i],
-                                     elem[5]))
+                    laneType.append(
+                        Lane(
+                            elem[0],
+                            elem[1],
+                            elem[2].split(",")[i]
+                            elem[3].split(",")[i],
+                            elem[4].split(",")[j],
+                            elem[5].split(",")[j]))
                 except IndexError:
                     print("There must be a load volume stated",
-                          " for each condition")
+                          " for each condition",
+                          "and an extract number",
+                          "for each tissue")
                     raise
     def getDscrpt(self):
         return self.dscrpt 
