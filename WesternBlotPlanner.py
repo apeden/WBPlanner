@@ -4,6 +4,7 @@ d1 = today.strftime("%d/%m/%Y")
 
 
 class WBRecord(object):
+    """Record of WB and its gels"""
     def __init__(self, file, planData = d1, operative = "Alex Peden",
                  dev = "3F4 1:10K, antiMFab 1:25K"):
         self.gels = []
@@ -29,12 +30,12 @@ class WBRecord(object):
                +"\n"+self.dev 
             
 class Gel(object):
+    """Describes samples analysed on one gel"""
     def __init__(self, num, maxLanes = 10):
         self.num = num
         self.maxLanes = maxLanes
         self.index = ['A','B','C','D','E','F'][self.num]
         self.lanes = []
-        assert(len(self.lanes) <= self.maxLanes),"Too many lanes"
     def getMaxLanes(self):
         return self.maxLanes
     def setLane(self, lane):
@@ -52,6 +53,7 @@ class Gel(object):
         return "\nGel " + self.index
 
 class Lane(object):
+    """A Lane to be placed on a gel"""
     def __init__(self, laneType, exNums, ruNums, condition, sample_vol,
                  final_vol, control = False):
         self.laneType = laneType
@@ -81,7 +83,10 @@ class Lane(object):
   
 class FileReader(object):
     def __init__(self, directory, file):
-        self.inFile = open(directory+"/"+file) 
+        try:
+            self.inFile = open(directory+"/"+file)
+        except FileNotFoundError:
+            print("Could not find file ",file,"in ",directory)
         self.forLanes = []
         for l in self.inFile:
             self.forLanes.append(l.split(";"))
@@ -93,6 +98,7 @@ class FileReader(object):
     def getForLanes(self):
         return self.forLanes
     def laneSort(self):      
+        """Classify lanes and sort into separate lists"""
         laneType = None
         for elem in self.forLanes[1:]:
             typ = elem[0].lower()
@@ -151,7 +157,7 @@ class GelPlanner(object):
             for i in range(len(laneType)):
                 self.setLn(laneType[i])
     def add_testlanes(self):
-            for i in range(self.g.availLanes()-1):
+            for i in range(self.g.availLanes()):
                 try:
                     self.setLn(self.testLn.pop(0))
                 except: break
@@ -162,24 +168,38 @@ class GelPlanner(object):
         while len(self.testLn) > 0:
             self.setGel()
             self.add_conlanes()
-            self.add_testlanes()          
             self.add_stdlanes()
-            self.addGel(self.getGel().copy()) 
+            self.add_testlanes()
+            self.addGel(self.getGel().copy())
+    def buildDiagGels(self):
+        while len(self.testLn) > 0:
+            self.setGel()
+            n = 0
+            self.setLn(self.mrk[0])
+            while n < 4:
+                self.setLn(self.testLn.pop(0))
+                self.setLn(self.std[n])                
+                n += 1
+            self.setLn(self.std[4])
+            self.addGel(self.getGel().copy())
     def addGel(self, gel):
         self.r.setGel(gel)
     def __str__(self):
         return str(self.r)
 
-def toTextFile(file, directory = "plans", scrnPrnt = True):
+def toTextFile(
+    file, directory = "plans", scrnPrnt = True, repeat =1, diag = False):
     p = GelPlanner(directory,file)
-    i = 0
     memo = open(file+" lane order.txt", "w")
     if scrnPrnt:
         print(p.getRecord())
         print(p.getDscrpt())
     memo.write(p.getRecord().__str__()+"\n")
     memo.write(p.getDscrpt()+"\n")
-    p.buildGels() 
+    if diag:
+        p.buildDiagGels() 
+    else:
+        p.buildGels()
     gel_it = p.getRecord().getGelsIt()
     for gel in gel_it:
         if scrnPrnt: print(gel)
@@ -192,7 +212,7 @@ def toTextFile(file, directory = "plans", scrnPrnt = True):
     memo.close()            
     p.closeFile()
 
-toTextFile("WB#19.XXX AP (standards)")
+toTextFile("WB#19.082 AP (32)", diag = True)
 
 
 
