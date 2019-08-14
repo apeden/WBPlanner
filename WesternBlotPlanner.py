@@ -54,15 +54,19 @@ class Gel(object):
 
 class Lane(object):
     """A Lane to be placed on a gel"""
-    def __init__(self, laneType, exNums, ruNums, condition, sample_vol,
-                 final_vol, control = False):
+        #forLanes: type;RU#;Tissues;Exs;Conditions;Volumes;FinalVol
+        #or:       type;Markers;Vol;None;None;None;FinalVol
+    def __init__(self, laneType, ruNums, tissue, exNums, condition, sample_vol,
+                 final_vol, numCond, control = False):
         self.laneType = laneType
+        self.tissue = tissue
         self.exNums = exNums
         self.ruNums = ruNums
         self.condition = condition
         self.sample_vol = sample_vol
-        self.control = control
         self.final_vol = final_vol
+        self.numCond = numCond
+        self.control = control
     def getNum():
         return self.num
     def getSamples(self):
@@ -75,9 +79,11 @@ class Lane(object):
         return self.control
     def __str__(self):
         return str(self.laneType).ljust(10,"_")\
-               + str(self.exNums).ljust(27,"_")\
-               + str(self.ruNums).ljust(25,"_")\
-               + str(self.condition).ljust(20,"_")\
+               + str(self.exNums).ljust(10,"_")\
+               + str(self.ruNums).ljust(15,"_")\
+               + str(self.condition).ljust(15,"_")\
+               + "numCond= "+str(self.numCond).ljust(15,"_")\
+               + str(self.tissue).ljust(10,"_")\
                + str(self.sample_vol).ljust(7,"_") \
                + str(self.final_vol).ljust(3,"_")
   
@@ -113,21 +119,23 @@ class FileReader(object):
             else: laneType = self.testLn 
             for i in range(len(elem[2].split(","))):
                 for j in range(len(elem[4].split(","))):
-                try:
-                    laneType.append(
-                        Lane(
-                            elem[0],
-                            elem[1],
-                            elem[2].split(",")[i]
-                            elem[3].split(",")[i],
-                            elem[4].split(",")[j],
-                            elem[5].split(",")[j]))
-                except IndexError:
-                    print("There must be a load volume stated",
-                          " for each condition",
-                          "and an extract number",
-                          "for each tissue")
-                    raise
+                    try:
+                        laneType.append(
+                            Lane(
+                                elem[0],
+                                elem[1],
+                                elem[2].split(",")[i],
+                                elem[3].split(",")[i],
+                                elem[4].split(",")[j],
+                                elem[5].split(",")[j],
+                                elem[6],
+                                len(elem[4].split(","))))
+                    except IndexError:
+                        print("There must be a load volume stated",
+                              " for each condition",
+                              "and an extract number",
+                              "for each tissue")
+                        raise
     def getDscrpt(self):
         return self.dscrpt 
     def getLanes(self):
@@ -166,7 +174,10 @@ class GelPlanner(object):
             for i in range(len(laneType)):
                 self.setLn(laneType[i])
     def add_testlanes(self):
-            for i in range(self.g.availLanes()):
+            for i in range(self.g.getMaxLanes()
+                           -len(self.mrk)
+                           -len(self.cntrLn)
+                           -len(self.std)):
                 try:
                     self.setLn(self.testLn.pop(0))
                 except: break
@@ -177,19 +188,19 @@ class GelPlanner(object):
         while len(self.testLn) > 0:
             self.setGel()
             self.add_conlanes()
-            self.add_stdlanes()
             self.add_testlanes()
+            self.add_stdlanes()
             self.addGel(self.getGel().copy())
-    def buildDiagGels(self):
+    def buildDiagGels(self, numStd = 4):
         while len(self.testLn) > 0:
             self.setGel()
             n = 0
             self.setLn(self.mrk[0])
-            while n < 4:
+            while(len(self.testLn) > 0):
                 self.setLn(self.testLn.pop(0))
-                self.setLn(self.std[n])                
+                self.setLn(self.std[n]) 
                 n += 1
-            self.setLn(self.std[4])
+            self.setLn(self.std[n])
             self.addGel(self.getGel().copy())
     def addGel(self, gel):
         self.r.setGel(gel)
@@ -221,7 +232,7 @@ def toTextFile(
     memo.close()            
     p.closeFile()
 
-toTextFile("WB#19.082 AP (32)", diag = True)
+toTextFile("WB#19.XXX AP (PMCA - 20)")
 
 
 
