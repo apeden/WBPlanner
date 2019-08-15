@@ -77,14 +77,17 @@ class Lane(object):
         return self.sample_vol
     def getControl(self):
         return self.control
+    def getTissue(self):
+        return self.tissue
+    def getNumCond(self):
+        return self.numCond
     def __str__(self):
         return str(self.laneType).ljust(10,"_")\
-               + str(self.exNums).ljust(10,"_")\
-               + str(self.ruNums).ljust(15,"_")\
+               + str(self.exNums).ljust(12,"_")\
+               + str(self.ruNums).ljust(27,"_")\
                + str(self.condition).ljust(15,"_")\
-               + "numCond= "+str(self.numCond).ljust(15,"_")\
                + str(self.tissue).ljust(10,"_")\
-               + str(self.sample_vol).ljust(7,"_") \
+               + str(self.sample_vol).ljust(3,"_") \
                + str(self.final_vol).ljust(3,"_")
   
 class FileReader(object):
@@ -133,8 +136,8 @@ class FileReader(object):
                     except IndexError:
                         print("There must be a load volume stated",
                               " for each condition",
-                              "and an extract number",
-                              "for each tissue")
+                              " and an extract number",
+                              "  for each tissue")
                         raise
     def getDscrpt(self):
         return self.dscrpt 
@@ -174,13 +177,20 @@ class GelPlanner(object):
             for i in range(len(laneType)):
                 self.setLn(laneType[i])
     def add_testlanes(self):
-            for i in range(self.g.getMaxLanes()
-                           -len(self.mrk)
-                           -len(self.cntrLn)
-                           -len(self.std)):
-                try:
-                    self.setLn(self.testLn.pop(0))
-                except: break
+        tissue = ""
+        availSpaces = self.g.getMaxLanes()\
+        -len(self.mrk)\
+        -len(self.cntrLn)\
+        -len(self.std)
+        #if there aren't enough spaces for all conditions, move on
+        i = 0
+        while(availSpaces-i>0) and (len(self.testLn) > 0):
+            if (self.testLn[0].getTissue() != tissue) \
+               and (self.testLn[0].getNumCond() > availSpaces-i):
+                break
+            tissue = self.testLn[0].getTissue()
+            self.setLn(self.testLn.pop(0))
+            i += 1
     def add_stdlanes(self):
         for i in range(len(self.std)):
             self.setLn(self.std[i])
