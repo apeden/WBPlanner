@@ -10,7 +10,6 @@ class WBRecord(object):
         self.gels = []
         self.id = file
         self.planDate = d1
-        self.planDate
         self.operative = operative
         self.dev = dev
         if "napta" in self.id.lower():
@@ -26,7 +25,7 @@ class WBRecord(object):
         for gel in self.gels:
             yield gel
     def __str__(self):
-        return self.id+"\n"+self.operative+"\n"+self.planDate\
+        return self.id+"\n"+self.operative+"\n"+"Printed on "+self.planDate\
                +"\n"+self.dev 
             
 class Gel(object):
@@ -83,7 +82,7 @@ class Lane(object):
         return self.numCond
     def __str__(self):
         return str(self.laneType).ljust(10,"_")\
-               + str(self.exNums).ljust(12,"_")\
+               + str(self.exNums).ljust(25,"_")\
                + str(self.ruNums).ljust(27,"_")\
                + str(self.condition).ljust(15,"_")\
                + str(self.tissue).ljust(10,"_")\
@@ -100,6 +99,7 @@ class FileReader(object):
         for l in self.inFile:
             self.forLanes.append(l.split(";"))
         self.dscrpt = self.forLanes[0][0]
+        self.perfDate =self.forLanes[1][0]
         self.cntrLn = []
         self.testLn = []
         self.std = []
@@ -111,7 +111,7 @@ class FileReader(object):
         laneType = None
         #forLanes: type;RU#;Tissues;Exs;Conditions;Volumes;FinalVol
         #or:       type;Markers;Vol;None;None;None;FinalVol
-        for elem in self.forLanes[1:]:
+        for elem in self.forLanes[2:]:
             typ = elem[0].lower()
             if "control" in typ:
                 laneType = self.cntrLn
@@ -140,7 +140,9 @@ class FileReader(object):
                               "  for each tissue")
                         raise
     def getDscrpt(self):
-        return self.dscrpt 
+        return self.dscrpt
+    def getPerfDate(self):
+        return self.perfDate 
     def getLanes(self):
         return self.mrk, self.cntrLn, self.testLn, self.std 
     def close(self):
@@ -163,6 +165,8 @@ class GelPlanner(object):
         return self.r
     def getDscrpt(self):
         return self.f.getDscrpt()
+    def getPerfDate(self):
+        return self.f.getPerfDate()
     def closeFile(self):
         self.f.close()
     def setGel(self):
@@ -224,8 +228,10 @@ def toTextFile(
     if scrnPrnt:
         print(p.getRecord())
         print(p.getDscrpt())
+        print("Performed on "+p.getPerfDate())
     memo.write(p.getRecord().__str__()+"\n")
     memo.write(p.getDscrpt()+"\n")
+    memo.write("Performed on "+p.getPerfDate())
     if diag:
         p.buildDiagGels() 
     else:
@@ -242,7 +248,7 @@ def toTextFile(
     memo.close()            
     p.closeFile()
 
-toTextFile("WB#19.XXX AP (PMCA - 20)")
+toTextFile("WB#19.089 AP (NaPTA - 21 23 24 25 28 29)")
 
 
 
