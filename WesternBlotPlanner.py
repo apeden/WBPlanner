@@ -1,4 +1,5 @@
 from datetime import date
+from pylab import table
 today = date.today()
 d1 = today.strftime("%d/%m/%Y")
 
@@ -56,7 +57,7 @@ class Lane(object):
         #forLanes: type;RU#;Tissues;Exs;Conditions;Volumes;FinalVol
         #or:       type;Markers;Vol;None;None;None;FinalVol
     def __init__(self, laneType, ruNums, tissue, exNums, condition, sample_vol,
-                 final_vol, numCond, control = False):
+                 final_vol, numCond):
         self.laneType = laneType
         self.tissue = tissue
         self.exNums = exNums
@@ -65,7 +66,6 @@ class Lane(object):
         self.sample_vol = sample_vol
         self.final_vol = final_vol
         self.numCond = numCond
-        self.control = control
     def getNum():
         return self.num
     def getSamples(self):
@@ -80,6 +80,14 @@ class Lane(object):
         return self.tissue
     def getNumCond(self):
         return self.numCond
+    def getDict(self):
+        return {"Type":self.laneType,
+                "Tissue":self.tissue,
+                "Ex num":self.exNums,
+                "RU nums":self.ruNums,
+                "Condition":self.condition,
+                "Sample vol":self.sample_vol,
+                "Final vol":self.final_vol}
     def __str__(self):
         return str(self.laneType).ljust(10,"_")\
                + str(self.exNums).ljust(25,"_")\
@@ -245,7 +253,30 @@ def toTextFile(
             if scrnPrnt: print(str(positn).ljust(3,"_"),lane)
             memo.write(str(positn).ljust(3,"_")+str(lane)+"\n")
             positn += 1
+            rowLabels = ["Type",
+                         "Tissue",
+                         "Ex num",
+                         "RU nums",
+                         "Condition",
+                         "Sample vol",
+                         "Final vol"]
+            column
+            table = pylab.table(rowLabels = rowLabels,
+                        colLabels = columnLabels,
+                        cellText = tableVals,
+                        cellLoc = 'center',
+                        loc = 'center',
+                        colWidths = [0.2]*len(animals))
+            table.scale(1, 2.5)
+            pylab.title('Eucliedan Distance Between Animals')
+
     memo.close()            
+    
+    pylab.title('Eucliedan Distance Between Animals')
+
+
+
+
     p.closeFile()
 
 toTextFile("WB#19.089 AP (NaPTA - 21 23 24 25 28 29)")
