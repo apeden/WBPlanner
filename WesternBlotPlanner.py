@@ -1,5 +1,5 @@
 from datetime import date
-from pylab import table
+import matplotlib.pyplot as plt
 today = date.today()
 d1 = today.strftime("%d/%m/%Y")
 
@@ -43,6 +43,8 @@ class Gel(object):
     def getLanes(self):
         for lane in self.lanes:
             yield lane.__str__()
+    def getLaneList(self):
+        return self.lanes
     def availLanes(self):
         return self.maxLanes - len(self.lanes)
     def getID(self):
@@ -249,37 +251,90 @@ def toTextFile(
         if scrnPrnt: print(gel)
         memo.write(gel.__str__()+"\n")
         positn = 1
-        for lane in gel.getLanes():
+        rowLabels = ["Type",
+                     "Tissue",
+                     "Ex num",
+                     "RU nums",
+                     "Condition",
+                     "Sample vol",
+                     "Final vol"]
+        colLabels = []
+        tableVals = []
+        for lane in gel.getLaneList():
+            row = []
             if scrnPrnt: print(str(positn).ljust(3,"_"),lane)
             memo.write(str(positn).ljust(3,"_")+str(lane)+"\n")
+            colLabels.append(positn)
+            contents = lane.getDict()
+            row.append(contents["Type"],
+                       contents["Tissue"],
+                       contents["Ex num"],
+                       contents["RU nums"],
+                       contents["Condition"],
+                       contents["Sample vol"],
+                       contents["Final vol"])
+            tableVals.append(row)
             positn += 1
-            rowLabels = ["Type",
-                         "Tissue",
-                         "Ex num",
-                         "RU nums",
-                         "Condition",
-                         "Sample vol",
-                         "Final vol"]
-            column
-            table = pylab.table(rowLabels = rowLabels,
-                        colLabels = columnLabels,
-                        cellText = tableVals,
-                        cellLoc = 'center',
-                        loc = 'center',
-                        colWidths = [0.2]*len(animals))
-            table.scale(1, 2.5)
-            pylab.title('Eucliedan Distance Between Animals')
-
+        table = pylab.table(rowLabels = rowLabels,
+                            colLabels = columnLabels,
+                            cellText = tableVals,
+                            cellLoc = 'center',
+                            loc = 'center',
+                            colWidths = [0.2]*7)
+        table.scale(1, 2.5)
+        pylab.title(gel.__st__())
     memo.close()            
-    
-    pylab.title('Eucliedan Distance Between Animals')
-
-
-
-
     p.closeFile()
 
-toTextFile("WB#19.089 AP (NaPTA - 21 23 24 25 28 29)")
+
+
+def toTable(file, directory = "plans", diag = False):
+    p = GelPlanner(directory,file)
+    if diag:
+        p.buildDiagGels() 
+    else:
+        p.buildGels()
+    gel_it = p.getRecord().getGelsIt()
+    for gel in gel_it:
+        positn = 1
+        rowLabels = []
+        colLabels = ["Type",
+                     "Tissue",
+                     "Ex num",
+                     "RU nums",
+                     "Condition",
+                     "Sample vol",
+                     "Final vol"]
+        tableVals = []
+        for lane in gel.getLaneList():
+            row = []
+            rowLabels.append(positn)
+            contents = lane.getDict()
+            for colLabel in colLabels:
+                row.append(contents[colLabel])
+            tableVals.append(row)
+            positn += 1
+        table = plt.table(rowLabels = rowLabels,
+                            colLabels = colLabels,
+                            cellText = tableVals,
+                            cellLoc = 'top',
+                            loc = 'center',
+                            colWidths = [0.2]*len(colLabels)
+                            )
+        table.scale(1, 4)
+
+
+        plt.subplots_adjust(left=0.2, bottom=0.2)
+
+
+
+
+
+        plt.title(gel.__str__())
+        plt.show()
+    p.closeFile()
+
+toTable("WB#19.089 AP (NaPTA - 21 23 24 25 28 29)")
 
 
 
