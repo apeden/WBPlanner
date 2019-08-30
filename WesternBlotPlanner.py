@@ -334,7 +334,7 @@ def toTable(file, directory = "plans", diag = False):
         plt.show()
     p.closeFile()
 
-toTable("WB#19.089 AP (NaPTA - 21 23 24 25 28 29)")
+toTextFile("WB#19.089 AP (NaPTA - 21 23 24 25 28 29)")
 
 
 
