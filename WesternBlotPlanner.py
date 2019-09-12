@@ -1,4 +1,8 @@
 from datetime import date
+from docx import Document
+from docx.shared import Inches
+
+
 today = date.today()
 d1 = today.strftime("%d/%m/%Y")
 
@@ -25,8 +29,7 @@ class WBRecord(object):
         for gel in self.gels:
             yield gel
     def __str__(self):
-        return self.id+"\n"+self.operative+"\n"+"Printed on "+self.planDate\
-               +"\n"+self.dev 
+        return self.id+"\n"+self.operative+"\n"+"Printed on "+self.planDate
             
 class Gel(object):
     """Describes samples analysed on one gel"""
@@ -40,6 +43,8 @@ class Gel(object):
     def setLane(self, lane):
         self.lanes.append(lane)
     def getLanes(self):
+        return self.lanes
+    def getLanesStr(self):
         for lane in self.lanes:
             yield lane.__str__()
     def availLanes(self):
@@ -58,14 +63,18 @@ class Lane(object):
     def __init__(self, laneType, ruNums, tissue, exNums, condition, sample_vol,
                  final_vol, numCond, control = False):
         self.laneType = laneType
+        self.ruNums = ruNums
         self.tissue = tissue
         self.exNums = exNums
-        self.ruNums = ruNums
         self.condition = condition
-        self.sample_vol = sample_vol
-        self.final_vol = final_vol
+        self.sample_vol = int(sample_vol)
+        self.final_vol = int(final_vol)
+        self.SBvol = round((self.final_vol/4),1)
+        self.EBvol = round((self.final_vol - self.sample_vol - self.SBvol),1)
         self.numCond = numCond
         self.control = control
+    def getHeadings(self):
+        return "Lane","Ex#","RU","Typing","Tissue","Condition","Sample vol","Ex Buff vol", "SB vol"
     def getNum():
         return self.num
     def getSamples(self):
@@ -74,10 +83,23 @@ class Lane(object):
         return self.condition
     def getSample_vol(self):
         return self.sample_vol
+    def getSBvol(self):
+        return self.SBvol
+    def getEBvol(self):
+        return self.EBvol
     def getControl(self):
         return self.control
     def getTissue(self):
         return self.tissue
+    def getTuple(self):
+        return self.exNums,\
+               self.ruNums,\
+               "",\
+               self.tissue,\
+               self.condition,\
+               str(self.sample_vol),\
+               str(self.EBvol),\
+               str(self.SBvol)
     def getNumCond(self):
         return self.numCond
     def __str__(self):
@@ -248,7 +270,41 @@ def toTextFile(
     memo.close()            
     p.closeFile()
 
+
+def toWord(file, directory ="plans", diag = False):
+    p = GelPlanner(directory,file)
+    document = Document()
+    document.add_heading("WESTERN BLOT RECORD SHEET", 0)
+    para = document.add_paragraph("Performed on "+p.getPerfDate())
+    para.add_run(p.getRecord().__str__()+"\n")
+    para.add_run(p.getDscrpt())   
+    if diag:
+        p.buildDiagGels() 
+    else:
+        p.buildGels()
+    gel_it = p.getRecord().getGelsIt()
+    for gel in gel_it:
+        headings = gel.getLanes()[0].getHeadings()    
+        document.add_paragraph(gel.__str__())
+        table = document.add_table(rows=1, cols= len(headings))
+        table.style = "Table Grid"
+        hdr_cells = table.rows[0].cells
+        for i in range (len(headings)):
+            hdr_cells[i].text = headings[i]        
+        lanes = gel.getLanes()
+        laneNum = 1
+        for i in range(len(lanes)):
+            row_cells = table.add_row().cells
+            for j in range(len(headings)-1):
+                row_cells[0].text = str(laneNum)
+                row_cells[j+1].text = lanes[i].getTuple()[j]
+            laneNum += 1
+    document.save(file+' result.docx')           
+    p.closeFile()
+
+    
 toTextFile("WB#19.089 AP (NaPTA - 21 23 24 25 28 29)")
+toWord("WB#19.089 AP (NaPTA - 21 23 24 25 28 29)")
 
 
 
