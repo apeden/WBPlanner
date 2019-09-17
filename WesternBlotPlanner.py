@@ -54,7 +54,7 @@ class Gel(object):
     def copy(self):
         return self
     def __str__(self):
-        return "\nGel " + self.index
+        return "Gel " + self.index
 
 class Lane(object):
     """A Lane to be placed on a gel"""
@@ -92,7 +92,7 @@ class Lane(object):
     def getTissue(self):
         return self.tissue
     def getTuple(self):
-        return self.exNums,\
+        return "Ex#XX.XXX",\
                self.ruNums,\
                "",\
                self.tissue,\
@@ -142,25 +142,26 @@ class FileReader(object):
             elif "standard" in typ:
                 laneType = self.std
             else: laneType = self.testLn 
-            for i in range(len(elem[2].split(","))):
-                for j in range(len(elem[4].split(","))):
-                    try:
-                        laneType.append(
-                            Lane(
-                                elem[0],
-                                elem[1],
-                                elem[2].split(",")[i],
-                                elem[3].split(",")[i],
-                                elem[4].split(",")[j],
-                                elem[5].split(",")[j],
-                                elem[6],
-                                len(elem[4].split(","))))
-                    except IndexError:
-                        print("There must be a load volume stated",
-                              " for each condition",
-                              " and an extract number",
-                              "  for each tissue")
-                        raise
+            for h in range(len(elem[1].split(","))):#RUs
+                for i in range(len(elem[2].split(","))):#Tissues
+                    for j in range(len(elem[4].split(","))):
+                        try:
+                            laneType.append(
+                                Lane(
+                                    elem[0],#type
+                                    elem[1].split(",")[h],#RU#
+                                    elem[2].split(",")[i],#Tissue
+                                    elem[3].split(",")[i],#Ex
+                                    elem[4].split(",")[j],#Conditions
+                                    elem[5].split(",")[j],#Sample vols
+                                    elem[6],#Final vol
+                                    len(elem[4].split(","))))
+                        except IndexError:
+                            print("There must be a load volume stated",
+                                  " for each condition",
+                                  " and an extract number",
+                                  "  for each tissue")
+                            raise
     def getDscrpt(self):
         return self.dscrpt
     def getPerfDate(self):
@@ -276,8 +277,7 @@ def toWord(file, directory ="plans", diag = False):
     document = Document()
     document.add_heading("WESTERN BLOT RECORD SHEET", 0)
     para = document.add_paragraph("Performed on "+p.getPerfDate())
-    para.add_run(p.getRecord().__str__()+"\n")
-    para.add_run(p.getDscrpt())   
+    para.add_run(p.getRecord().__str__()+"\n"+p.getDscrpt())
     if diag:
         p.buildDiagGels() 
     else:
