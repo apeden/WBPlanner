@@ -10,15 +10,15 @@ d1 = today.strftime("%d/%m/%Y")
 class WBRecord(object):
     """Record of WB and its gels"""
     def __init__(self, file, planData = d1, operative = "Alex Peden",
-                 dev = "3F4 1:10K, antiMFab 1:25K"):
+                 dev = ["3F4", "1:10K", "antiMFab", "1:25K"]):
         self.gels = []
         self.id = file
         self.planDate = d1
         self.operative = operative
         self.dev = dev
         if "napta" in self.id.lower():
-            self.dev += " SuperSignal"
-        else: self.dev += " prime"          
+            self.dev.append("SuperSignal")
+        else: self.dev.append("prime")          
     def getID(self):
         return self.id
     def setGel(self, gel):
@@ -28,6 +28,8 @@ class WBRecord(object):
     def getGelsIt(self):
         for gel in self.gels:
             yield gel
+    def getDev(self):
+        return self.dev
     def __str__(self):
         return self.id+"\n"+self.operative+"\n"+"Printed on "+self.planDate
             
@@ -299,12 +301,21 @@ def toWord(file, directory ="plans", diag = False):
                 row_cells[0].text = str(laneNum)
                 row_cells[j+1].text = lanes[i].getTuple()[j]
             laneNum += 1
+    document.add_paragraph("\nDeveloping conditions")
+    cond = p.getRecord().getDev()
+    devHeadings = "Prim Ab", "Dilution", "Sec Ab", "Dilution", "Dev Method"
+    tableDev = document.add_table(rows=2, cols= len(devHeadings))
+    for i in range(len(cond)):
+        tableDev.rows[0].cells[i].text = devHeadings[i]
+        tableDev.rows[1].cells[i].text = cond[i] 
+    tableDev.style = "Table Grid"
     document.save(file+' result.docx')           
     p.closeFile()
 
     
-toTextFile("WB#19.089 AP (NaPTA - 21 23 24 25 28 29)")
-toWord("WB#19.089 AP (NaPTA - 21 23 24 25 28 29)")
+
+#toWord("WB#19.089 AP (NaPTA - 21 23 24 25 28 29)")
+toWord("WB#19.XXX (PMCA - 212324252829)")
 
 
 
